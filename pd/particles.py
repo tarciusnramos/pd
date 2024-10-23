@@ -5,10 +5,10 @@
 import numpy as np 
 from numpy.linalg import norm 
 from numpy import outer, dot, array, zeros
-import ut
-from constants import I_3, ZERO_VECTOR, ZERO_TENSOR, ZERO_RANK_3_TENSOR
-import cell
-
+import pd.ut as ut
+from pd.constants import I_3, ZERO_VECTOR, ZERO_TENSOR, ZERO_RANK_3_TENSOR
+import pd.cell as cell
+import pd.optimized_func as optimized_func
 
 class PointDipoleList(list):
     """A list class of ``PointDipole`` objects"""
@@ -20,8 +20,8 @@ class PointDipoleList(list):
         a0 = 0.52917721092
         self._Cell = None
         if pf is not None:
-            units = pf.next()
-            self.header_dict = header_to_dict(pf.next())
+            units = next(pf)
+            self.header_dict = header_to_dict(next(pf))
             for i, line in enumerate(pf):
                 if i == self.header_dict["#atoms"]: break
                 line_dict = line_to_dict(self.header_dict, line)
@@ -57,7 +57,7 @@ class PointDipoleList(list):
     def append(self, arg):
         """Overriding superclass list append: check if arg is PointDipole"""
         if not isinstance(arg,  PointDipole):
-            print "PointDipoleList.append called with object of type", type(arg)
+            print("PointDipoleList.append called with object of type", type(arg))
             raise TypeError
         super(PointDipoleList, self).append(arg)
 
@@ -103,9 +103,9 @@ class PointDipoleList(list):
 
         n = len(self)
         if cython:
-            import optimized_func
+            #import optimized_func
             _T = optimized_func.dipole_coupling_tensor_pointdipole_cython( 
-                    particles = array([p.group for p in self], dtype = long) ,
+                    particles = array([p.group for p in self], dtype = 'long') ,
                     _r = array([p._r for p in self], dtype = float),
                     num_threads = num_threads  )
         else:
@@ -164,9 +164,9 @@ class PointDipoleList(list):
                     threshold = threshold,
                     num_threads = num_threads )
         except SCFNotConverged as e:
-            print "SCF Not converged: residual=%f, threshold=%f"% (
+            print("SCF Not converged: residual=%f, threshold=%f"% (
                 float(e.residual), float(e.threshold)
-                )
+                ))
             raise SystemExit
             
         dE = self.form_Applequist_rhs()
@@ -243,7 +243,7 @@ class PointDipoleList(list):
         if cython:
             #import pyximport
             #pyximport.install()
-            import optimized_func 
+            #import optimized_func 
 
             E_at_p, i, residual = optimized_func.solve_scf_for_external_pointdipole_cython(
                     particles = array([p.group for p in self]) ,
@@ -359,7 +359,7 @@ class PointDipoleList(list):
         return np.array([p.induced_dipole_moment() for p in self])
 
     def field_gradient_of_method(self, method):
-        from test.util import ex, ey, ez, EPSILON
+        from pd.test.util import ex, ey, ez, EPSILON
 
         fx = self.finite_difference(method, ex)
         fy = self.finite_difference(method, ey)
@@ -381,7 +381,7 @@ class PointDipoleList(list):
         return dm
         
     def field_hessian_of_method(self, method):
-        from test.util import ex, ey, ez, EPSILON
+        from pd.test.util import ex, ey, ez, EPSILON
 
         fxx = self.finite_difference2(method, ex, ex)
         fxy = self.finite_difference2(method, ex, ey)
@@ -700,7 +700,7 @@ def header_to_dict(header):
         "ut_hyppol": False, 
         }
 
-    header_data = map(int, header.split())
+    header_data = list(map(int, header.split()))
     header_dict["#atoms"] = header_data[0]
     header_dict["max_angmom"] = header_data[1]
     header_dict["iso_pol"] = len(header_data) > 2 and header_data[2] % 10 == 1
@@ -717,7 +717,7 @@ def line_to_dict(header_dict, line):
     line_items = line.split()
 
     line_dict['group'] = int(line_items[0])
-    line_data = map(float, line_items[1:])
+    line_data = list(map(float, line_items[1:]))
 
     line_dict['coordinates'] = line_data[:3]
     nextstart = 3

@@ -4,9 +4,9 @@
 import numpy as np 
 from numpy.linalg import norm 
 from numpy import outer, dot, array, zeros, einsum
-import ut
-from constants import I_3, ZERO_VECTOR, ZERO_TENSOR
-from particles import PointDipole, PointDipoleList, header_to_dict, line_to_dict
+import pd.ut as ut
+from pd.constants import I_3, ZERO_VECTOR, ZERO_TENSOR
+from pd.particles import PointDipole, PointDipoleList, header_to_dict, line_to_dict
 
 class QuadrupoleList( PointDipoleList ):
     """
@@ -35,7 +35,7 @@ class QuadrupoleList( PointDipoleList ):
     def append(self, arg):
         """Overriding superclass list append: check if arg is Quadrupole"""
         if not isinstance(arg,  Quadrupole):
-            print "QuadrupoleList.append called with object of type", type(arg)
+            print("QuadrupoleList.append called with object of type", type(arg))
             raise TypeError
         super(QuadrupoleList, self).append(arg)
 

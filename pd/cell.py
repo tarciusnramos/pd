@@ -1,5 +1,5 @@
 import numpy as np
-import particles
+import pd.particles as particles
 import itertools
 
 a0 = 0.52917721092

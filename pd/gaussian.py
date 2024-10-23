@@ -5,8 +5,8 @@ import numpy as np
 from math import erf
 from numpy.linalg import norm , tensorinv
 from numpy import outer, dot, array, zeros, einsum, diag
-import ut
-from particles import PointDipole, PointDipoleList, header_to_dict, line_to_dict
+import pd.ut as ut
+from pd.particles import PointDipole, PointDipoleList, header_to_dict, line_to_dict
 
 I_3 = np.identity(3)
 ZERO_VECTOR = np.zeros(3)
@@ -32,8 +32,8 @@ class GaussianQuadrupoleList( PointDipoleList ):
         super( GaussianQuadrupoleList, self).__init__()
         a0 = 0.52917721092
         if pf is not None:
-            units = pf.next()
-            self.header_dict = header_to_dict( pf.next() )
+            units = next(pf)
+            self.header_dict = header_to_dict( next(pf) )
             for i, line in enumerate(pf):
                 if i == self.header_dict["#atoms"]: break
                 line_dict = line_to_dict( self.header_dict, line)
@@ -48,7 +48,7 @@ class GaussianQuadrupoleList( PointDipoleList ):
     def append(self, arg):
         """Overriding superclass list append: check if arg is GaussianQuadrupole"""
         if not isinstance(arg,  GaussianQuadrupole):
-            print "GaussianQuadrupoleList.append called with object of type", type(arg)
+            print("GaussianQuadrupoleList.append called with object of type", type(arg))
             raise TypeError
         super(GaussianQuadrupoleList, self).append(arg)
 

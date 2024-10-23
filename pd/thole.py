@@ -5,9 +5,10 @@ import numpy as np
 from math import erf
 from numpy.linalg import norm , tensorinv
 from numpy import outer, dot, array, zeros, einsum, diag
-import ut
-from particles import header_to_dict, line_to_dict, PointDipoleList
-from gaussian import GaussianQuadrupoleList, GaussianQuadrupole, SCFNotConverged, header_to_dict
+import pd.ut as ut
+from pd.particles import header_to_dict, line_to_dict, PointDipoleList
+from pd.gaussian import GaussianQuadrupoleList, GaussianQuadrupole, SCFNotConverged, header_to_dict
+import pd.optimized_func as optimized_func
 
 I_3 = np.identity(3)
 ZERO_VECTOR = np.zeros(3)
@@ -26,15 +27,20 @@ class TholeList( GaussianQuadrupoleList ):
 
     """
 
-    def __init__(self, pf=None):
+    def __init__(self, pf=None, a = None):
         """Class constructor 
         pf: potential file object (or iterator)
         """
         super( TholeList, self).__init__()
+        if a is None:
+            self._a = 2.1304
+        else:
+            self._a = a
+
         a0 = 0.52917721092
         if pf is not None:
-            units = pf.next()
-            self.header_dict = header_to_dict( pf.next() )
+            units = next(pf)
+            self.header_dict = header_to_dict( next(pf) )
             for i, line in enumerate(pf):
                 if i == self.header_dict["#atoms"]: break
                 line_dict = line_to_dict(self.header_dict, line)
@@ -47,11 +53,11 @@ class TholeList( GaussianQuadrupoleList ):
     def append(self, arg):
         """Overriding superclass list append: check if arg is Thole"""
         if not isinstance(arg, Thole):
-            print " TholeList.append called with object of type", type(arg)
+            print(" TholeList.append called with object of type", type(arg))
             raise TypeError
         super(TholeList, self).append(arg)
 
-    def evaluate_field_at_atoms(self, a = 2.1304, external=None):
+    def evaluate_field_at_atoms(self, external=None):
         E_at_p = np.zeros( (len(self), 3))
         if self._Cell is not None:
             for i, pdi in enumerate( self ):
@@ -61,7 +67,7 @@ class TholeList( GaussianQuadrupoleList ):
                     rij = pdi.r - pdj.r
                     r = norm( rij ) 
                     u = r / ( pdi._a0.trace() * pdj._a0.trace() / 9.0 )**(1.0/6)
-                    v = a * u
+                    v = self._a * u
                     fv = 1.0 - (( 0.5 * v + 1.0) * np.exp(-v))
                     fe = fv - (( 0.5 * v**2 + 0.5 * v) * np.exp(-v))
                     ft = fe - (v**3 * np.exp( -v ) / 6.0)
@@ -75,7 +81,7 @@ class TholeList( GaussianQuadrupoleList ):
                     rij = pdi.r - pdj.r
                     r = norm( rij )
                     u = r / ( pdi._a0.trace() * pdj._a0.trace() / 9.0 )**(1.0/6.0)
-                    v = a * u
+                    v = self._a * u
                     fv = 1.0 - (( 0.5 * v + 1.0) * np.exp(-v))
                     fe = fv - (( 0.5 * v**2 + 0.5 * v) * np.exp(-v))
                     ft = fe - (v**3.0 * np.exp( -v ) / 6.0)
@@ -90,7 +96,7 @@ class TholeList( GaussianQuadrupoleList ):
             num_threads = 1 ):
         E_p0 = np.zeros((len(self), 3))
         if cython:
-            import optimized_func
+            #import optimized_func
             E_at_p, i, residual = optimized_func.solve_scf_for_external_thole_cython(
                     particles = array([p.group for p in self]) ,
                     E = E,
@@ -113,7 +119,7 @@ class TholeList( GaussianQuadrupoleList ):
                 for p, Ep in zip(self, E_at_p):
                     p.set_local_field(Ep)
                 residual = norm(E_p0 - E_at_p)
-                print residual, threshold
+                print( residual, threshold)
                 if residual < threshold:
                     return i, residual
                 E_p0[:, :] = E_at_p
@@ -124,7 +130,7 @@ class TholeList( GaussianQuadrupoleList ):
         _T = zeros((n, 3, n,  3))
 
         if cython:
-            import optimized_func
+            #import optimized_func
             _T = optimized_func.dipole_coupling_tensor_thole_cython( 
                     particles = array([p.group for p in self]) ,
                     _r = array([p._r for p in self]),

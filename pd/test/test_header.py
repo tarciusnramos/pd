@@ -80,14 +80,14 @@ class  TestHeader(unittest.TestCase):
         header_dict = {"iso_pol": True}
         pot_line = "1 0 0 0 0 7"
         line_dict = line_to_dict(header_dict, pot_line)
-        print "line_dict", line_dict
+        print("line_dict", line_dict)
         self.assertEqual(line_dict['iso_alpha'], 7.0)
 
     def test_line_to_dict_ut_pol(self):
         header_dict = {"ut_pol": True}
         pot_line = "1 0 0 0 0 1 2 3 4 5 6"
         line_dict = line_to_dict(header_dict, pot_line)
-        print "line_dict", line_dict
+        print("line_dict", line_dict)
         self.assertEqual(line_dict['ut_alpha'], range(1,7))
 
     def test_line_to_dict_ut_hyppol(self):

@@ -195,8 +195,8 @@ class GaussianQuadrupoleListFiniteFieldTests(unittest.TestCase):
         self.assertAlmostEqual(dp0_dF[0, 2, 2], alphas[0][2, 2], places=3)
 
     def notest_finite_difference_hyperpolarizable_monomer_z(self):
-        print self.h2o_monomer_hyp[0]._a0
-        print self.h2o_monomer_hyp[0]._b0
+        print(self.h2o_monomer_hyp[0]._a0)
+        print(self.h2o_monomer_hyp[0]._b0)
         alphas = self.h2o_monomer_hyp.solve_Applequist_equation()
         dp0_dF = self.h2o_monomer_hyp.field_gradient_of_method(self.h2o_monomer_hyp.induced_dipole_moment)
         self.assertAlmostEqual(dp0_dF[0, 2, 2], alphas[0][2, 2], places=3)

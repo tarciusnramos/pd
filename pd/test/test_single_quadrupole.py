@@ -168,7 +168,7 @@ class QuadrupoleTest(unittest.TestCase):
         field_point = dipole.coordinates() + dR
         reference_field = (3*dR*7 - 25*np.ones(3))/5**5 #+ 1.0*dR/5**3
         Ep = dipole.dipole_field_at(field_point)
-        print Ep
+        print(Ep)
         np.testing.assert_almost_equal(
             dipole.dipole_field_at(field_point),
             reference_field
